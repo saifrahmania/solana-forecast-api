@@ -1,18 +1,30 @@
 from typing import Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, field_validator
 
+# You can optionally enforce typed columns, but Dict is also fine.
+# If you want hard-coded feature names later, we can generate a typed class dynamically.
+class FeatureRow(BaseModel):
+    __annotations__ = {}
+
 class PredictRequest(BaseModel):
-    """Accept either a single row via `features` or a batch via `rows`."""
+    """
+    Request schema for prediction.
+    - `features`: single inference
+    - `rows`: batch inference
+    """
+
     model_config = ConfigDict(extra="forbid")
 
     features: Optional[Dict[str, float]] = None
     rows: Optional[List[Dict[str, float]]] = None
 
+    # Empty list -> None
     @field_validator("rows", mode="before")
     @classmethod
     def empty_list_to_none(cls, v):
         return None if v == [] else v
 
+    # Single-row cannot be empty
     @field_validator("features")
     @classmethod
     def ensure_not_empty(cls, v):
@@ -20,6 +32,7 @@ class PredictRequest(BaseModel):
             raise ValueError("`features` cannot be empty.")
         return v
 
+    # Batch cannot be empty
     @field_validator("rows")
     @classmethod
     def ensure_rows_not_empty(cls, v):
@@ -27,6 +40,7 @@ class PredictRequest(BaseModel):
             raise ValueError("`rows` cannot be an empty list.")
         return v
 
+    # Ensure exactly one of (features, rows)
     @field_validator("*", mode="after")
     @classmethod
     def check_exactly_one(cls, values):

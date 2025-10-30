@@ -6,3 +6,11 @@ scikit-learn
 pandas
 numpy
 joblib
+fastapi
+uvicorn
+joblib
+scikit-learn
+pandas
+numpy
+pydantic
+python-dotenv

@@ -13,7 +13,7 @@ router = APIRouter()
 def predict(req: PredictRequest):
     start = time.time()
 
-    # Convert to row list
+    # Single-row -> list
     if req.features is not None:
         rows = [req.features]
     else:
@@ -27,13 +27,13 @@ def predict(req: PredictRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Inference failed: {e}")
 
-    dur_ms = (time.time() - start) * 1000.0
+    duration_ms = (time.time() - start) * 1000.0
     model_name = type(get_pipeline()).__name__
 
     return PredictResponse(
         yhat=yhat,
         n=len(yhat),
-        runtime_ms=dur_ms,
+        runtime_ms=duration_ms,
         model_name=model_name,
         token=settings.TOKEN,
     )

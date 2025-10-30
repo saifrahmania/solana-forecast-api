@@ -16,3 +16,4 @@ def test_predict_minimal_row():
     data = r.json()
     assert "yhat" in data and isinstance(data["yhat"], list)
     assert len(data["yhat"]) == 1
+    
