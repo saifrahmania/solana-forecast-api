@@ -1,38 +1,26 @@
+# app/models/request.py
 from typing import Dict, List, Optional
-from pydantic import BaseModel, ConfigDict, field_validator
-
-# You can optionally enforce typed columns, but Dict is also fine.
-# If you want hard-coded feature names later, we can generate a typed class dynamically.
-class FeatureRow(BaseModel):
-    __annotations__ = {}
+from pydantic import BaseModel, ConfigDict, model_validator, field_validator
 
 class PredictRequest(BaseModel):
     """
     Request schema for prediction.
-    - `features`: single inference
-    - `rows`: batch inference
+    - `features`: single-row inference (dict of feature_name -> float)
+    - `rows`: batch inference (list of dicts)
     """
-
     model_config = ConfigDict(extra="forbid")
 
     features: Optional[Dict[str, float]] = None
     rows: Optional[List[Dict[str, float]]] = None
 
-    # Empty list -> None
-    @field_validator("rows", mode="before")
-    @classmethod
-    def empty_list_to_none(cls, v):
-        return None if v == [] else v
-
-    # Single-row cannot be empty
+    # Optional safety checks
     @field_validator("features")
     @classmethod
-    def ensure_not_empty(cls, v):
+    def ensure_features_not_empty(cls, v):
         if v is not None and len(v) == 0:
-            raise ValueError("`features` cannot be empty.")
+            raise ValueError("`features` cannot be an empty object.")
         return v
 
-    # Batch cannot be empty
     @field_validator("rows")
     @classmethod
     def ensure_rows_not_empty(cls, v):
@@ -40,12 +28,12 @@ class PredictRequest(BaseModel):
             raise ValueError("`rows` cannot be an empty list.")
         return v
 
-    # Ensure exactly one of (features, rows)
-    @field_validator("*", mode="after")
-    @classmethod
-    def check_exactly_one(cls, values):
-        features = values.get("features")
-        rows = values.get("rows")
-        if (features is None) == (rows is None):
+    # ✅ Correct way in Pydantic v2 to validate across multiple fields
+    @model_validator(mode="after")
+    def check_exactly_one(self):
+        has_features = self.features is not None
+        has_rows = self.rows is not None
+        if has_features == has_rows:
+            # both True or both False → invalid
             raise ValueError("Provide exactly one of 'features' or 'rows'.")
-        return values
+        return self

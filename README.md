@@ -1,31 +1,42 @@
-# Solana Forecast API (Saifur – Individual Submission)
+# 🚀 Solana Forecast API
 
-Predicts next-day HIGH for SOL using an ElasticNet-based pipeline trained with time-series CV (n_splits=3) on engineered technical indicators.
+Predicts the **next-day HIGH price** of the Solana (SOL) cryptocurrency using a production-ready machine learning pipeline.  
+The model is trained on engineered technical indicators, rolling window features, volatility signals, and cyclical time encodings.
 
-## Endpoints
-- GET /health
-- GET /features
-- POST /predict
+This API exposes a lightweight prediction service suitable for backtesting, dashboards, and analytics systems.
 
-Example:
-POST /predict
-{
-  "records": [{"pct_close_change":0.7, "rsi_14":51.2, "ema_close_7":145.2, "...":0.0}],
-  "strict": false
-}
+---
 
-## Quickstart
-pip install -r requirements-min.txt
-uvicorn app.main:app --reload
+## ✅ Features
 
-## Docker
-docker build -t solana-api .
-docker run -p 8000:8000 solana-api
+- ⚡ Fast, low-latency predictions
+- 📦 Pre-loaded trained pipeline (ElasticNet + RobustScaler + KBest)
+- 🧾 Strict schema validation via Pydantic
+- 🔁 Supports single or batch inference
+- 🔐 Deterministic reproducibility via stored artifacts
+- 🐳 Fully Dockerized deployment
 
-## Model
-- Best: ElasticNet pipeline (KBest + RobustScaler + ElasticNet)
-- CV (MAE mean): 6.60 vs naive/roll7 baselines …
-- Features: see `artifacts/solana_feature_columns.json`
+---
 
-## Notes
-This repository contains only my API component extracted from the group project.
+## 📦 Artifacts Included
+
+| File | Description |
+|------|-------------|
+| `solana_best_pipeline_elasticnet.joblib` | Main prediction pipeline |
+| `solana_feature_columns.json` | Ordered feature list |
+| `solana_scaler_top20.pkl` | Alternate scaler |
+| `solana_rf_top20.pkl` | Random Forest variant |
+| `solana_model_metadata_top20.pkl` | CV scores, hyperparameters |
+
+All artifacts are automatically loaded at startup.
+
+---
+
+## 🔗 API Endpoints
+
+### ✅ Health Check
+`GET /api/v1/health`
+
+```json
+{ "status": "ok" }
+```
